@@ -132,7 +132,15 @@ Function Get-Privilege {
 			[UInt32]$TokenPrivSize = 1000		#Magic Number
 			[IntPtr]$TokenPrivPtr = [System.Runtime.InteropServices.Marshal]::AllocHGlobal($TokenPrivSize)
 			[uint32]$ReturnLength = 0
-			[void][PoShPrivilege]::GetTokenInformation( $hProcessToken, [TOKEN_INFORMATION_CLASS]::TokenPrivileges, $TokenPrivPtr, $TokenPrivSize, [ref]$ReturnLength )
+			
+			#https://docs.microsoft.com/en-us/windows/win32/api/securitybaseapi/nf-securitybaseapi-gettokeninformation
+			$rval = [PoShPrivilege]::GetTokenInformation( $hProcessToken, [TOKEN_INFORMATION_CLASS]::TokenPrivileges, $TokenPrivPtr, $TokenPrivSize, [ref]$ReturnLength )
+			#$false -> 0; $true -> !0
+			if ( $false -eq $val) { 
+				write-host "GetTokenInformation() failed."
+				Write-host "TODO Call GetLastError()"
+				[Environment]::Exit(1)
+			}
 
 			#https://docs.microsoft.com/en-us/windows/win32/api/winnt/ns-winnt-token_privileges
 			$TokenPrivileges = [System.Runtime.InteropServices.Marshal]::PtrToStructure($TokenPrivPtr, [Type][TOKEN_PRIVILEGES])
