@@ -1,4 +1,4 @@
-﻿$ScriptPath = Split-Path $MyInvocation.MyCommand.Path
+$ScriptPath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath('.\')
 
 #region Module Builder
 $Domain = [AppDomain]::CurrentDomain
@@ -9,71 +9,100 @@ $ModuleBuilder = $AssemblyBuilder.DefineDynamicModule('PrivilegeModule', $False)
 
 #region Enums
 #region LSA_AccessPolicy
+# https://fossies.org/windows/www/openslides-2.3-portable.zip/openslides-2.3-portable/Lib/site-packages/win32/Demos/security/security_enums.py
+# https://doxygen.reactos.org/dd/d7a/ntsecapi_8h_source.html
 $EnumBuilder = $ModuleBuilder.DefineEnum('LSA_AccessPolicy', 'Public', [uint32])
-[void]$EnumBuilder.DefineLiteral('POLICY_AUDIT_LOG_ADMIN', [uint32] 0x00000200)
-[void]$EnumBuilder.DefineLiteral('POLICY_CREATE_ACCOUNT', [uint32] 0x00000010)
-[void]$EnumBuilder.DefineLiteral('POLICY_CREATE_PRIVILEGE', [uint32] 0x00000040)
-[void]$EnumBuilder.DefineLiteral('POLICY_CREATE_SECRET', [uint32] 0x00000020)
+[void]$EnumBuilder.DefineLiteral('POLICY_VIEW_LOCAL_INFORMATION', [uint32] 0x00000001)
+[void]$EnumBuilder.DefineLiteral('POLICY_VIEW_AUDIT_INFORMATION', [uint32] 0x00000002)
 [void]$EnumBuilder.DefineLiteral('POLICY_GET_PRIVATE_INFORMATION', [uint32] 0x00000004)
+[void]$EnumBuilder.DefineLiteral('POLICY_TRUST_ADMIN', [uint32] 0x00000008)
+[void]$EnumBuilder.DefineLiteral('POLICY_CREATE_ACCOUNT', [uint32] 0x00000010)
+[void]$EnumBuilder.DefineLiteral('POLICY_CREATE_SECRET', [uint32] 0x00000020)
+[void]$EnumBuilder.DefineLiteral('POLICY_CREATE_PRIVILEGE', [uint32] 0x00000040)
+[void]$EnumBuilder.DefineLiteral('POLICY_SET_DEFAULT_QUOTA_LIMITS', [uint32] 0x00000080)
+[void]$EnumBuilder.DefineLiteral('POLICY_SET_AUDIT_REQUIREMENTS', [uint32] 0x00000100)
+[void]$EnumBuilder.DefineLiteral('POLICY_AUDIT_LOG_ADMIN', [uint32] 0x00000200)
+[void]$EnumBuilder.DefineLiteral('POLICY_SERVER_ADMIN', [uint32] 0x00000400)
 [void]$EnumBuilder.DefineLiteral('POLICY_LOOKUP_NAMES', [uint32] 0x00000800)
 [void]$EnumBuilder.DefineLiteral('POLICY_NOTIFICATION', [uint32] 0x00001000)
-[void]$EnumBuilder.DefineLiteral('POLICY_SERVER_ADMIN', [uint32] 0x00000400)
-[void]$EnumBuilder.DefineLiteral('POLICY_SET_AUDIT_REQUIREMENTS', [uint32] 0x00000100)
-[void]$EnumBuilder.DefineLiteral('POLICY_SET_DEFAULT_QUOTA_LIMITS', [uint32] 0x00000080)
-[void]$EnumBuilder.DefineLiteral('POLICY_TRUST_ADMIN', [uint32] 0x00000008)
-[void]$EnumBuilder.DefineLiteral('POLICY_VIEW_AUDIT_INFORMATION', [uint32] 0x00000002)
-[void]$EnumBuilder.DefineLiteral('POLICY_VIEW_LOCAL_INFORMATION', [uint32] 0x00000001)
 [void]$EnumBuilder.CreateType()
 #endregion LSA_AccessPolicy
+
 #region Privileges
+
+################
+#
+# TODO:
+#  Are there any missing LUIDS?
+#  Do the insitu sequence numbers matter?
+#
+################
+#https://docs.microsoft.com/en-us/windows/win32/wmisdk/privilege-constants
+#https://docs.microsoft.com/en-us/windows/win32/secauthz/privilege-constants
+#https://dahall.github.io/TaskScheduler/html/T_Microsoft_Win32_TaskScheduler_TaskPrincipalPrivilege.htm
+#https://github.com/tpn/winsdk-10/blob/master/Include/10.0.14393.0/km/ntifs.h
+#https://github.com/wine-mirror/wine/blob/master/dlls/advapi32/tests/security.c
+#https://github.com/wine-mirror/wine/blob/master/include/winternl.h
+#https://renenyffenegger.ch/notes/Windows/security/privileges/index
+#https://docs.microsoft.com/en-us/windows/win32/secauthz/account-rights-constants
+#https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-gpsb/3413b381-a445-4d17-b77e-5bbfadda253b
+#https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-tsch/b9420a4c-fe40-45a0-ae85-2d57e051409b
 $EnumBuilder = $ModuleBuilder.DefineEnum('Privileges', 'Public', [uint32])
-[void]$EnumBuilder.DefineLiteral('SeAssignPrimaryTokenPrivilege',[uint32] 0x00000000)
-[void]$EnumBuilder.DefineLiteral('SeAuditPrivilege',[uint32] 0x00000001)
-[void]$EnumBuilder.DefineLiteral('SeBackupPrivilege',[uint32] 0x00000002)
-[void]$EnumBuilder.DefineLiteral('SeBatchLogonRight',[uint32] 0x00000003)
-[void]$EnumBuilder.DefineLiteral('SeChangeNotifyPrivilege',[uint32] 0x00000004)
-[void]$EnumBuilder.DefineLiteral('SeCreateGlobalPrivilege',[uint32] 0x00000005)
-[void]$EnumBuilder.DefineLiteral('SeCreatePagefilePrivilege',[uint32] 0x00000006)
-[void]$EnumBuilder.DefineLiteral('SeCreatePermanentPrivilege',[uint32] 0x00000007)
-[void]$EnumBuilder.DefineLiteral('SeCreateSymbolicLinkPrivilege',[uint32] 0x00000008)
-[void]$EnumBuilder.DefineLiteral('SeCreateTokenPrivilege',[uint32] 0x00000009)
-[void]$EnumBuilder.DefineLiteral('SeDebugPrivilege',[uint32] 0x0000000a)
-[void]$EnumBuilder.DefineLiteral('SeImpersonatePrivilege',[uint32] 0x0000000b)
-[void]$EnumBuilder.DefineLiteral('SeIncreaseBasePriorityPrivilege',[uint32] 0x0000000c)
-[void]$EnumBuilder.DefineLiteral('SeIncreaseQuotaPrivilege',[uint32] 0x0000000d)
-[void]$EnumBuilder.DefineLiteral('SeInteractiveLogonRight',[uint32] 0x0000000e)
-[void]$EnumBuilder.DefineLiteral('SeLoadDriverPrivilege',[uint32] 0x0000000f)
-[void]$EnumBuilder.DefineLiteral('SeLockMemoryPrivilege',[uint32] 0x00000010)
-[void]$EnumBuilder.DefineLiteral('SeMachineAccountPrivilege',[uint32] 0x00000011)
-[void]$EnumBuilder.DefineLiteral('SeManageVolumePrivilege',[uint32] 0x00000012)
-[void]$EnumBuilder.DefineLiteral('SeNetworkLogonRight',[uint32] 0x00000013)
-[void]$EnumBuilder.DefineLiteral('SeProfileSingleProcessPrivilege',[uint32] 0x00000014)
-[void]$EnumBuilder.DefineLiteral('SeRemoteInteractiveLogonRight',[uint32] 0x00000015)
-[void]$EnumBuilder.DefineLiteral('SeRemoteShutdownPrivilege',[uint32] 0x00000016)
-[void]$EnumBuilder.DefineLiteral('SeRestorePrivilege',[uint32] 0x00000017)
-[void]$EnumBuilder.DefineLiteral('SeSecurityPrivilege',[uint32] 0x00000018)
-[void]$EnumBuilder.DefineLiteral('SeServiceLogonRight',[uint32] 0x00000019)
-[void]$EnumBuilder.DefineLiteral('SeShutdownPrivilege',[uint32] 0x0000001a)
-[void]$EnumBuilder.DefineLiteral('SeSystemEnvironmentPrivilege',[uint32] 0x0000001b)
-[void]$EnumBuilder.DefineLiteral('SeSystemProfilePrivilege',[uint32] 0x0000001c)
-[void]$EnumBuilder.DefineLiteral('SeSystemtimePrivilege',[uint32] 0x0000001d)
-[void]$EnumBuilder.DefineLiteral('SeTakeOwnershipPrivilege',[uint32] 0x0000001e)
-[void]$EnumBuilder.DefineLiteral('SeTcbPrivilege',[uint32] 0x0000001f)
-[void]$EnumBuilder.DefineLiteral('SeTimeZonePrivilege',[uint32] 0x00000020)
-[void]$EnumBuilder.DefineLiteral('SeUndockPrivilege',[uint32] 0x00000021)
-[void]$EnumBuilder.DefineLiteral('SeDenyNetworkLogonRight',[uint32] 0x00000022)
-[void]$EnumBuilder.DefineLiteral('SeDenyBatchLogonRight',[uint32] 0x00000023)
-[void]$EnumBuilder.DefineLiteral('SeDenyServiceLogonRight',[uint32] 0x00000024)
-[void]$EnumBuilder.DefineLiteral('SeDenyInteractiveLogonRight',[uint32] 0x00000025)
-[void]$EnumBuilder.DefineLiteral('SeSyncAgentPrivilege',[uint32] 0x00000026)
-[void]$EnumBuilder.DefineLiteral('SeEnableDelegationPrivilege',[uint32] 0x00000027)
-[void]$EnumBuilder.DefineLiteral('SeDenyRemoteInteractiveLogonRight',[uint32] 0x00000028)
-[void]$EnumBuilder.DefineLiteral('SeTrustedCredManAccessPrivilege',[uint32] 0x00000029)
-[void]$EnumBuilder.DefineLiteral('SeIncreaseWorkingSetPrivilege',[uint32] 0x0000002a)
-[void]$EnumBuilder.DefineLiteral('SeDelegateSessionUserImpersonatePrivilege',[uint32] 0x0000002b)
+[void]$EnumBuilder.DefineLiteral('SeAssignPrimaryTokenPrivilege',[uint32] 0x00000000)				#SE_ASSIGNPRIMARYTOKEN_NAME
+[void]$EnumBuilder.DefineLiteral('SeAuditPrivilege',[uint32] 0x00000001)							#SE_AUDIT_NAME
+[void]$EnumBuilder.DefineLiteral('SeBackupPrivilege',[uint32] 0x00000002)							#SE_BACKUP_NAME
+[void]$EnumBuilder.DefineLiteral('SeBatchLogonRight',[uint32] 0x00000003)							#SE_BATCH_LOGON_NAME
+[void]$EnumBuilder.DefineLiteral('SeChangeNotifyPrivilege',[uint32] 0x00000004)						#SE_CHANGE_NOTIFY_NAME
+[void]$EnumBuilder.DefineLiteral('SeCreateGlobalPrivilege',[uint32] 0x00000005)						#SE_CREATE_GLOBAL_NAME
+[void]$EnumBuilder.DefineLiteral('SeCreatePagefilePrivilege',[uint32] 0x00000006)					#SE_CREATE_PAGEFILE_NAME
+[void]$EnumBuilder.DefineLiteral('SeCreatePermanentPrivilege',[uint32] 0x00000007)					#SE_CREATE_PERMANENT_NAME
+[void]$EnumBuilder.DefineLiteral('SeCreateSymbolicLinkPrivilege',[uint32] 0x00000008)				#SE_CREATE_SYMBOLIC_LINK_NAME
+[void]$EnumBuilder.DefineLiteral('SeCreateTokenPrivilege',[uint32] 0x00000009)						#SE_CREATE_TOKEN_PRIVILEGE         
+[void]$EnumBuilder.DefineLiteral('SeDebugPrivilege',[uint32] 0x0000000a)							#SE_DEBUG_NAME
+[void]$EnumBuilder.DefineLiteral('SeImpersonatePrivilege',[uint32] 0x0000000b)						#SE_IMPERSONATE_NAME
+[void]$EnumBuilder.DefineLiteral('SeIncreaseBasePriorityPrivilege',[uint32] 0x0000000c)				#SE_INC_BASE_PRIORITY_NAME
+[void]$EnumBuilder.DefineLiteral('SeIncreaseQuotaPrivilege',[uint32] 0x0000000d)					#SE_INCREASE_QUOTA_NAME
+[void]$EnumBuilder.DefineLiteral('SeInteractiveLogonRight',[uint32] 0x0000000e)						#SE_INTERACTIVE_LOGON_NAME
+[void]$EnumBuilder.DefineLiteral('SeLoadDriverPrivilege',[uint32] 0x0000000f)						#SE_LOAD_DRIVER_NAME
+[void]$EnumBuilder.DefineLiteral('SeLockMemoryPrivilege',[uint32] 0x00000010)						#SE_LOCK_MEMORY_NAME
+[void]$EnumBuilder.DefineLiteral('SeMachineAccountPrivilege',[uint32] 0x00000011)					#SE_MACHINE_ACCOUNT_NAME
+[void]$EnumBuilder.DefineLiteral('SeManageVolumePrivilege',[uint32] 0x00000012)						#SE_MANAGE_VOLUME_NAME
+[void]$EnumBuilder.DefineLiteral('SeNetworkLogonRight',[uint32] 0x00000013)							#SE_NETWORK_LOGON_NAME
+[void]$EnumBuilder.DefineLiteral('SeProfileSingleProcessPrivilege',[uint32] 0x00000014)				#SE_PROF_SINGLE_PROCESS_NAME
+[void]$EnumBuilder.DefineLiteral('SeRemoteInteractiveLogonRight',[uint32] 0x00000015)				#SE_REMOTE_INTERACTIVE_LOGON_NAME
+[void]$EnumBuilder.DefineLiteral('SeRemoteShutdownPrivilege',[uint32] 0x00000016)					#SE_REMOTE_SHUTDOWN_NAME
+[void]$EnumBuilder.DefineLiteral('SeRestorePrivilege',[uint32] 0x00000017)							#SE_RESTORE_NAME
+[void]$EnumBuilder.DefineLiteral('SeSecurityPrivilege',[uint32] 0x00000018)							#SE_SECURITY_NAME
+[void]$EnumBuilder.DefineLiteral('SeServiceLogonRight',[uint32] 0x00000019)							#SE_SERVICE_LOGON_NAME
+[void]$EnumBuilder.DefineLiteral('SeShutdownPrivilege',[uint32] 0x0000001a)							#SE_SHUTDOWN_NAME
+[void]$EnumBuilder.DefineLiteral('SeSystemEnvironmentPrivilege',[uint32] 0x0000001b)				#SE_SYSTEM_ENVIRONMENT_NAME
+[void]$EnumBuilder.DefineLiteral('SeSystemProfilePrivilege',[uint32] 0x0000001c)					#SE_SYSTEM_PROFILE_NAME
+[void]$EnumBuilder.DefineLiteral('SeSystemtimePrivilege',[uint32] 0x0000001d)						#SE_SYSTEMTIME_NAME
+[void]$EnumBuilder.DefineLiteral('SeTakeOwnershipPrivilege',[uint32] 0x0000001e)					#SE_TAKE_OWNERSHIP_NAME
+[void]$EnumBuilder.DefineLiteral('SeTcbPrivilege',[uint32] 0x0000001f)								#SE_TCB_NAME
+[void]$EnumBuilder.DefineLiteral('SeTimeZonePrivilege',[uint32] 0x00000020)							#SE_TIME_ZONE_NAME
+[void]$EnumBuilder.DefineLiteral('SeUndockPrivilege',[uint32] 0x00000021)							#SE_UNDOCK_NAME
+[void]$EnumBuilder.DefineLiteral('SeDenyNetworkLogonRight',[uint32] 0x00000022)						#SE_DENY_NETWORK_LOGON_NAME
+[void]$EnumBuilder.DefineLiteral('SeDenyBatchLogonRight',[uint32] 0x00000023)						#SE_DENY_BATCH_LOGON_NAME
+[void]$EnumBuilder.DefineLiteral('SeDenyServiceLogonRight',[uint32] 0x00000024)						#SE_DENY_SERVICE_LOGON_NAME
+[void]$EnumBuilder.DefineLiteral('SeDenyInteractiveLogonRight',[uint32] 0x00000025)					#SE_DENY_INTERACTIVE_LOGON_NAME
+[void]$EnumBuilder.DefineLiteral('SeSyncAgentPrivilege',[uint32] 0x00000026)						#SE_SYNC_AGENT_NAME
+[void]$EnumBuilder.DefineLiteral('SeEnableDelegationPrivilege',[uint32] 0x00000027)					#SE_ENABLE_DELEGATION_NAME
+[void]$EnumBuilder.DefineLiteral('SeDenyRemoteInteractiveLogonRight',[uint32] 0x00000028)			#SE_DENY_REMOTE_INTERACTIVE_LOGON_NAME
+[void]$EnumBuilder.DefineLiteral('SeTrustedCredManAccessPrivilege',[uint32] 0x00000029)				#SE_TRUSTED_CREDMAN_ACCESS_NAME
+[void]$EnumBuilder.DefineLiteral('SeIncreaseWorkingSetPrivilege',[uint32] 0x0000002a)				#SE_INC_WORKING_SET_NAME
+#manually added 
+[void]$EnumBuilder.DefineLiteral('SeRelabelPrivilege',[uint32] 0x0000002b)							#SE_RELABEL_NAME
+[void]$EnumBuilder.DefineLiteral('SeUnsolicitedInputPrivilege',[uint32] 0x0000002c)					#SE_UNSOLICITED_INPUT_NAME
+[void]$EnumBuilder.DefineLiteral('SeDelegateSessionUserImpersonatePrivilege',[uint32] 0x0000002d)	#SE_DELEGATE_SESSION_USER_IMPERSONATE_NAME
+
 [void]$EnumBuilder.CreateType()
 #endregion Privileges
+
+
+# TODO: check if there are any missing token identifiers
 #region TOKEN_INFORMATION_CLASS
+#https://github.com/wine-mirror/wine/blob/master/include/winnt.h
 $EnumBuilder = $ModuleBuilder.DefineEnum('TOKEN_INFORMATION_CLASS', 'Public', [uint32])
 [void]$EnumBuilder.DefineLiteral('TokenUser ',[uint32] 0x00000001)
 [void]$EnumBuilder.DefineLiteral('TokenGroups',[uint32] 0x00000002)
@@ -92,9 +121,35 @@ $EnumBuilder = $ModuleBuilder.DefineEnum('TOKEN_INFORMATION_CLASS', 'Public', [u
 [void]$EnumBuilder.DefineLiteral('TokenSandBoxInert',[uint32] 0x0000000f)
 [void]$EnumBuilder.DefineLiteral('TokenAuditPolicy',[uint32] 0x00000010)
 [void]$EnumBuilder.DefineLiteral('TokenOrigin',[uint32] 0x00000011)
+[void]$EnumBuilder.DefineLiteral('TokenElevationType',[uint32] 0x00000012)
+[void]$EnumBuilder.DefineLiteral('TokenLinkedToken',[uint32] 0x00000013)
+[void]$EnumBuilder.DefineLiteral('TokenElevation',[uint32] 0x00000014)
+[void]$EnumBuilder.DefineLiteral('TokenHasRestrictions',[uint32] 0x00000015)
+[void]$EnumBuilder.DefineLiteral('TokenAccessInformation',[uint32] 0x00000016)
+[void]$EnumBuilder.DefineLiteral('TokenVirtualizationAllowed',[uint32] 0x00000017)
+[void]$EnumBuilder.DefineLiteral('TokenVirtualizationEnabled',[uint32] 0x00000018)
+[void]$EnumBuilder.DefineLiteral('TokenIntegrityLevel',[uint32] 0x00000019)
+[void]$EnumBuilder.DefineLiteral('TokenUIAccess',[uint32] 0x00000020)
+[void]$EnumBuilder.DefineLiteral('TokenMandatoryPolicy',[uint32] 0x00000021)
+[void]$EnumBuilder.DefineLiteral('TokenLogonSid',[uint32] 0x00000022)
+[void]$EnumBuilder.DefineLiteral('TokenIsAppContainer',[uint32] 0x00000023)
+[void]$EnumBuilder.DefineLiteral('TokenCapabilities',[uint32] 0x00000024)
+[void]$EnumBuilder.DefineLiteral('TokenAppContainerSid',[uint32] 0x00000025)
+[void]$EnumBuilder.DefineLiteral('TokenAppContainerNumber',[uint32] 0x00000026)
+[void]$EnumBuilder.DefineLiteral('TokenUserClaimAttributes,',[uint32] 0x00000027)
+[void]$EnumBuilder.DefineLiteral('TokenDeviceClaimAttributes',[uint32] 0x00000028)
+[void]$EnumBuilder.DefineLiteral('TokenRestrictedUserClaimAttributes',[uint32] 0x00000029)
+[void]$EnumBuilder.DefineLiteral('TokenRestrictedDeviceClaimAttributes',[uint32] 0x00000030)
+[void]$EnumBuilder.DefineLiteral('TokenDeviceGroups',[uint32] 0x00000031)
+[void]$EnumBuilder.DefineLiteral('TokenRestrictedDeviceGroups',[uint32] 0x00000032)
+[void]$EnumBuilder.DefineLiteral('TokenSecurityAttributes',[uint32] 0x00000033)
+[void]$EnumBuilder.DefineLiteral('TokenIsRestricted',[uint32] 0x00000034)
+[void]$EnumBuilder.DefineLiteral('TokenProcessTrustLevel',[uint32] 0x00000035)
 [void]$EnumBuilder.CreateType()
 #endregion TOKEN_INFORMATION_CLASS
-#region ProcessAccessFlags 
+
+# TODO: check if there are any missing process access flags
+#region ProcessAccessFlags
 $EnumBuilder = $ModuleBuilder.DefineEnum('ProcessAccessFlags', 'Public', [uint32])
 [void]$EnumBuilder.DefineLiteral('All', [uint32] 0x001F0FFF)
 [void]$EnumBuilder.DefineLiteral('Terminate', [uint32] 0x00000001)
@@ -113,6 +168,10 @@ $EnumBuilder = $ModuleBuilder.DefineEnum('ProcessAccessFlags', 'Public', [uint32
 #endregion ProcessAccessFlags
 #endregion Enums
 
+
+
+# TODO: verify structure corrections...
+
 #region Structs
 #region TokPriv1Luid
 $Attributes = 'AutoLayout, AnsiClass, Class, Public, SequentialLayout, Sealed, BeforeFieldInit'
@@ -122,6 +181,8 @@ $STRUCT_TypeBuilder = $ModuleBuilder.DefineType('TokPriv1Luid', $Attributes, [Sy
 [void]$STRUCT_TypeBuilder.DefineField('Attr', [int], 'Public')
 [void]$STRUCT_TypeBuilder.CreateType()
 #endregion TokPriv1Luid
+
+
 #region LUID
 $Attributes = 'AutoLayout, AnsiClass, Class, Public, SequentialLayout, Sealed, BeforeFieldInit'
 $STRUCT_TypeBuilder = $ModuleBuilder.DefineType('LUID', $Attributes, [System.ValueType], 8)
@@ -129,6 +190,7 @@ $STRUCT_TypeBuilder = $ModuleBuilder.DefineType('LUID', $Attributes, [System.Val
 [void]$STRUCT_TypeBuilder.DefineField('HighPart', [int], 'Public')
 [void]$STRUCT_TypeBuilder.CreateType()
 #endregion LUID
+
 #region LARGE_INTEGER
 $Attributes = 'AutoLayout, AnsiClass, Class, Public, SequentialLayout, Sealed, BeforeFieldInit'
 $STRUCT_TypeBuilder = $ModuleBuilder.DefineType('LARGE_INTEGER', $Attributes, [System.ValueType], 8)
@@ -136,6 +198,7 @@ $STRUCT_TypeBuilder = $ModuleBuilder.DefineType('LARGE_INTEGER', $Attributes, [S
 [void]$STRUCT_TypeBuilder.DefineField('HighPart', [uint32], 'Public')
 [void]$STRUCT_TypeBuilder.CreateType()
 #endregion LARGE_INTEGER
+
 #region LUID_AND_ATTRIBUTES
 $Attributes = 'AutoLayout, AnsiClass, Class, Public, SequentialLayout, Sealed, BeforeFieldInit'
 $STRUCT_TypeBuilder = $ModuleBuilder.DefineType('LUID_AND_ATTRIBUTES', $Attributes, [System.ValueType], 12)
@@ -143,6 +206,7 @@ $STRUCT_TypeBuilder = $ModuleBuilder.DefineType('LUID_AND_ATTRIBUTES', $Attribut
 [void]$STRUCT_TypeBuilder.DefineField('Attributes', [uint32], 'Public')
 [void]$STRUCT_TypeBuilder.CreateType()
 #endregion LUID_AND_ATTRIBUTES
+
 #region LSA_UNICODE_STRING
 $Attributes = 'AutoLayout, AnsiClass, Class, Public, SequentialLayout, Sealed, BeforeFieldInit'
 $STRUCT_TypeBuilder = $ModuleBuilder.DefineType('LSA_UNICODE_STRING', $Attributes, [System.ValueType], 8, 0x0)
@@ -155,6 +219,7 @@ $BufferField = $STRUCT_TypeBuilder.DefineField('Buffer', [string], @('Public','H
 $BufferField.SetCustomAttribute($CustomAttributeBuilder)
 [void]$STRUCT_TypeBuilder.CreateType()
 #endregion LSA_UNICODE_STRING
+
 #region LSA_OBJECT_ATTRIBUTES
 $Attributes = 'AutoLayout, AnsiClass, Class, Public, SequentialLayout, Sealed, BeforeFieldInit'
 $STRUCT_TypeBuilder = $ModuleBuilder.DefineType('LSA_OBJECT_ATTRIBUTES', $Attributes, [System.ValueType], 8, 0x0)
@@ -166,12 +231,14 @@ $STRUCT_TypeBuilder = $ModuleBuilder.DefineType('LSA_OBJECT_ATTRIBUTES', $Attrib
 [void]$STRUCT_TypeBuilder.DefineField('Length', [int], 'Public')
 [void]$STRUCT_TypeBuilder.CreateType()
 #endregion LSA_OBJECT_ATTRIBUTES
+
 #region LSA_ENUMERATION_INFORMATION
 $Attributes = 'AutoLayout, AnsiClass, Class, Public, SequentialLayout, Sealed, BeforeFieldInit'
 $STRUCT_TypeBuilder = $ModuleBuilder.DefineType('LSA_ENUMERATION_INFORMATION', $Attributes, [System.ValueType], 1, 0x8)
 [void]$STRUCT_TypeBuilder.DefineField('Sid', [intptr], 'Public')
 [void]$STRUCT_TypeBuilder.CreateType()
 #endregion LSA_ENUMERATION_INFORMATION
+
 #region TOKEN_STATISTICS
 $Attributes = 'AutoLayout, AnsiClass, Class, Public, SequentialLayout, Sealed, BeforeFieldInit'
 $STRUCT_TypeBuilder = $ModuleBuilder.DefineType('TOKEN_STATISTICS', $Attributes, [System.ValueType])
@@ -187,6 +254,7 @@ $STRUCT_TypeBuilder = $ModuleBuilder.DefineType('TOKEN_STATISTICS', $Attributes,
 [void]$STRUCT_TypeBuilder.DefineField('ModifiedId', [LUID], 'Public')
 [void]$STRUCT_TypeBuilder.CreateType()
 #endregion TOKEN_STATISTICS
+
 #region TOKEN_PRIVILEGES
 $Attributes = 'AutoLayout, AnsiClass, Class, Public, SequentialLayout, Sealed, BeforeFieldInit'
 $STRUCT_TypeBuilder = $ModuleBuilder.DefineType('TOKEN_PRIVILEGES', $Attributes, [System.ValueType])
@@ -988,48 +1056,49 @@ Try {
 Function AddSignedIntAsUnsigned {
     ##Source function from Matt Graeber and Joe Balek
     [cmdletbinding()]
-	Param(
-	[Parameter(Position = 0, Mandatory = $true)]
-	[Int64]
-	$Value1,
-		
-	[Parameter(Position = 1, Mandatory = $true)]
-	[Int64]
-	$Value2
-	)
-		
-	[Byte[]]$Value1Bytes = [BitConverter]::GetBytes($Value1)
-	[Byte[]]$Value2Bytes = [BitConverter]::GetBytes($Value2)
-	[Byte[]]$FinalBytes = [BitConverter]::GetBytes([UInt64]0)
+    Param(
+    [Parameter(Position = 0, Mandatory = $true)]
+    [Int64]
+    $Value1,
+        
+    [Parameter(Position = 1, Mandatory = $true)]
+    [Int64]
+    $Value2
+    )
+        
+    [Byte[]]$Value1Bytes = [BitConverter]::GetBytes($Value1)
+    [Byte[]]$Value2Bytes = [BitConverter]::GetBytes($Value2)
+    [Byte[]]$FinalBytes = [BitConverter]::GetBytes([UInt64]0)
 
-	if ($Value1Bytes.Count -eq $Value2Bytes.Count)
-	{
-		$CarryOver = 0
-		for ($i = 0; $i -lt $Value1Bytes.Count; $i++)
-		{
-			#Add bytes
-			[UInt16]$Sum = $Value1Bytes[$i] + $Value2Bytes[$i] + $CarryOver
+    if ($Value1Bytes.Count -eq $Value2Bytes.Count)
+    {
+        $CarryOver = 0
+        for ($i = 0; $i -lt $Value1Bytes.Count; $i++)
+        {
+            #Add bytes
+            [UInt16]$Sum = $Value1Bytes[$i] + $Value2Bytes[$i] + $CarryOver
 
-			$FinalBytes[$i] = $Sum -band 0x00FF
-				
-			if (($Sum -band 0xFF00) -eq 0x100)
-			{
-				$CarryOver = 1
-			}
-			else
-			{
-				$CarryOver = 0
-			}
+            $FinalBytes[$i] = $Sum -band 0x00FF
+                
+            if (($Sum -band 0xFF00) -eq 0x100)
+            {
+                $CarryOver = 1
+            }
+            else
+            {
+                $CarryOver = 0
+            }
             Write-Verbose "Carryover: $($CarryOver)"
-		}
-	}
-	else
-	{
-		Throw "Cannot add bytearrays of different sizes"
-	}
-		
-	return [BitConverter]::ToInt64($FinalBytes, 0)
+        }
+    }
+    else
+    {
+        Throw "Cannot add bytearrays of different sizes"
+    }
+        
+    return [BitConverter]::ToInt64($FinalBytes, 0)
 }
+
 Function GetPrivilegeDisplayName {
     Param ([Privileges]$Privilege)
     [uint32]$DisplayName = 150
@@ -1051,10 +1120,11 @@ Function GetPrivilegeDisplayName {
 
 #region Aliases
 New-Alias -Name gppv -Value Get-Privilege
-New-Alias -Name appv -Value Add-Privilege
-New-Alias -Name rppv -Value Remove-Privilege
-New-Alias -Name eppv -Value Enable-Privilege
-New-Alias -Name dppv -Value Disable-Privilege
+#neutered 20201106
+#New-Alias -Name appv -Value Add-Privilege
+#New-Alias -Name rppv -Value Remove-Privilege
+#New-Alias -Name eppv -Value Enable-Privilege
+#New-Alias -Name dppv -Value Disable-Privilege
 #endregion Aliases
 
 #region Load Type and Format Files
