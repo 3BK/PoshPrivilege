@@ -1,5 +1,5 @@
 
-PoshPrivilege (0.3.0.0)
+PoshPrivilege (0.3.0.2)
 ============
 [![Build status](https://ci.appveyor.com/api/projects/status/1e8nc4ron54pcu3q?svg=true)](https://ci.appveyor.com/project/proxb/poshprivilege)
 
@@ -9,11 +9,7 @@ Related blog post: http://learn-powershell.net/2015/06/03/managing-privileges-us
 
 Available Commands:
 ```PowerShell
-Add-Privilege
-Disable-Privilege
-Enable-Privilege
 Get-Privilege
-Remove-Privilege
 ```
 
 Download and install PoshPrivilege using PowerShell V5:
