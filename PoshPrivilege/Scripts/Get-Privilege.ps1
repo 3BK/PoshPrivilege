@@ -20,6 +20,7 @@ Function Get-Privilege {
             Author: Boe Prox
             Version History:
                 1.0 - Initial Version
+		1.1 - 3BK
  
         .EXAMPLE
             Get-Privilege
