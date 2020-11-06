@@ -18,21 +18,14 @@ Describe "PoshPrivilege PS$PSVersion" {
         Set-StrictMode -Version latest
         It 'should load all functions' {
             $Commands = @( Get-Command -CommandType Function -Module PoshPrivilege | Select -ExpandProperty Name)
-            $Commands.count | Should be 5
-            $Commands -contains "Add-Privilege"     | Should be $True
-            $Commands -contains "Disable-Privilege" | Should be $True
-            $Commands -contains "Enable-Privilege"  | Should be $True
+            $Commands.count | Should be 1
             $Commands -contains "Get-Privilege"   | Should be $True
-            $Commands -contains "Remove-Privilege"    | Should be $True
+
         }
         It 'should load all aliases' {
             $Commands = @( Get-Command -CommandType Alias -Module PoshPrivilege | Select -ExpandProperty Name)
-            $Commands.count | Should be 5
-            $Commands -contains "appv"     | Should be $True
-            $Commands -contains "dppv" | Should be $True
-            $Commands -contains "eppv"  | Should be $True
+            $Commands.count | Should be 1
             $Commands -contains "gppv"   | Should be $True
-            $Commands -contains "rppv"    | Should be $True           
         }
     }
 }
