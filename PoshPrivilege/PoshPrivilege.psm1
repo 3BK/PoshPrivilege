@@ -47,17 +47,17 @@ $EnumBuilder = $ModuleBuilder.DefineEnum('LSA_AccessPolicy', 'Public', [uint32])
 #https://docs.microsoft.com/en-us/windows/win32/secauthz/account-rights-constants
 #https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-gpsb/3413b381-a445-4d17-b77e-5bbfadda253b
 #https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-tsch/b9420a4c-fe40-45a0-ae85-2d57e051409b
-$EnumBuilder = $ModuleBuilder.DefineEnum('Privileges', 'Public', [uint32])
-[void]$EnumBuilder.DefineLiteral('SeAssignPrimaryTokenPrivilege',[uint32] 0x00000000)				#SE_ASSIGNPRIMARYTOKEN_NAME
-[void]$EnumBuilder.DefineLiteral('SeAuditPrivilege',[uint32] 0x00000001)							#SE_AUDIT_NAME
-[void]$EnumBuilder.DefineLiteral('SeBackupPrivilege',[uint32] 0x00000002)							#SE_BACKUP_NAME
-[void]$EnumBuilder.DefineLiteral('SeBatchLogonRight',[uint32] 0x00000003)							#SE_BATCH_LOGON_NAME
-[void]$EnumBuilder.DefineLiteral('SeChangeNotifyPrivilege',[uint32] 0x00000004)						#SE_CHANGE_NOTIFY_NAME
-[void]$EnumBuilder.DefineLiteral('SeCreateGlobalPrivilege',[uint32] 0x00000005)						#SE_CREATE_GLOBAL_NAME
-[void]$EnumBuilder.DefineLiteral('SeCreatePagefilePrivilege',[uint32] 0x00000006)					#SE_CREATE_PAGEFILE_NAME
-[void]$EnumBuilder.DefineLiteral('SeCreatePermanentPrivilege',[uint32] 0x00000007)					#SE_CREATE_PERMANENT_NAME
-[void]$EnumBuilder.DefineLiteral('SeCreateSymbolicLinkPrivilege',[uint32] 0x00000008)				#SE_CREATE_SYMBOLIC_LINK_NAME
-[void]$EnumBuilder.DefineLiteral('SeCreateTokenPrivilege',[uint32] 0x00000009)						#SE_CREATE_TOKEN_PRIVILEGE         
+$EnumBuilder = $ModuleBuilder.DefineEnum('Privileges', 'Public', [uint32])                          
+[void]$EnumBuilder.DefineLiteral('SeAssignPrimaryTokenPrivilege',[uint32] 0x00000000)				#SE_ASSIGNPRIMARYTOKEN_NAME|SE_ASSIGNPRIMARYTOKEN_PRIVILEGE|IDS_ASSIGNPRIMARYTOKEN_PRIVILEGE
+[void]$EnumBuilder.DefineLiteral('SeAuditPrivilege',[uint32] 0x00000001)							#SE_AUDIT_NAME|SE_AUDIT_PRIVILEGE|IDS_AUDIT_PRIVILEGE
+[void]$EnumBuilder.DefineLiteral('SeBackupPrivilege',[uint32] 0x00000002)							#SE_BACKUP_NAME|SE_BACKUP_PRIVILEGE|IDS_BACKUP_PRIVILEGE
+[void]$EnumBuilder.DefineLiteral('SeBatchLogonRight',[uint32] 0x00000003)							#SE_BATCH_LOGON_NAME|SECURITY_ACCESS_BATCH_LOGON
+[void]$EnumBuilder.DefineLiteral('SeChangeNotifyPrivilege',[uint32] 0x00000004)						#SE_CHANGE_NOTIFY_NAME|SE_CHANGE_NOTIFY_PRIVILEGE|IDS_CHANGE_NOTIFY_PRIVILEGE
+[void]$EnumBuilder.DefineLiteral('SeCreateGlobalPrivilege',[uint32] 0x00000005)						#SE_CREATE_GLOBAL_NAME|SE_CREATE_GLOBAL_PRIVILEGE|IDS_CREATE_GLOBAL_PRIVILEGE
+[void]$EnumBuilder.DefineLiteral('SeCreatePagefilePrivilege',[uint32] 0x00000006)					#SE_CREATE_PAGEFILE_NAME|SE_CREATE_PAGEFILE_PRIVILEGE|IDS_CREATE_PAGEFILE_PRIVILEGE
+[void]$EnumBuilder.DefineLiteral('SeCreatePermanentPrivilege',[uint32] 0x00000007)					#SE_CREATE_PERMANENT_NAME|SE_CREATE_PERMANENT_PRIVILEGE|IDS_CREATE_PERMANENT_PRIVILEGE
+[void]$EnumBuilder.DefineLiteral('SeCreateSymbolicLinkPrivilege',[uint32] 0x00000008)				#SE_CREATE_SYMBOLIC_LINK_NAME|and so on...
+[void]$EnumBuilder.DefineLiteral('SeCreateTokenPrivilege',[uint32] 0x00000009)						#SE_CREATE_TOKEN_NAME
 [void]$EnumBuilder.DefineLiteral('SeDebugPrivilege',[uint32] 0x0000000a)							#SE_DEBUG_NAME
 [void]$EnumBuilder.DefineLiteral('SeImpersonatePrivilege',[uint32] 0x0000000b)						#SE_IMPERSONATE_NAME
 [void]$EnumBuilder.DefineLiteral('SeIncreaseBasePriorityPrivilege',[uint32] 0x0000000c)				#SE_INC_BASE_PRIORITY_NAME
@@ -91,7 +91,6 @@ $EnumBuilder = $ModuleBuilder.DefineEnum('Privileges', 'Public', [uint32])
 [void]$EnumBuilder.DefineLiteral('SeDenyRemoteInteractiveLogonRight',[uint32] 0x00000028)			#SE_DENY_REMOTE_INTERACTIVE_LOGON_NAME
 [void]$EnumBuilder.DefineLiteral('SeTrustedCredManAccessPrivilege',[uint32] 0x00000029)				#SE_TRUSTED_CREDMAN_ACCESS_NAME
 [void]$EnumBuilder.DefineLiteral('SeIncreaseWorkingSetPrivilege',[uint32] 0x0000002a)				#SE_INC_WORKING_SET_NAME
-#manually added 
 [void]$EnumBuilder.DefineLiteral('SeRelabelPrivilege',[uint32] 0x0000002b)							#SE_RELABEL_NAME
 [void]$EnumBuilder.DefineLiteral('SeUnsolicitedInputPrivilege',[uint32] 0x0000002c)					#SE_UNSOLICITED_INPUT_NAME
 [void]$EnumBuilder.DefineLiteral('SeDelegateSessionUserImpersonatePrivilege',[uint32] 0x0000002d)	#SE_DELEGATE_SESSION_USER_IMPERSONATE_NAME
